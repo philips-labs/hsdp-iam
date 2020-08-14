@@ -1,0 +1,773 @@
+swagger: '2.0'
+info:
+  version: '1'
+  title: Using the Identity Management Proposition resources
+  description: >
+    This set of resources allows organization account owners to create and
+    manage propositions within an organization.
+
+
+    Base Path: /authorize/identity
+
+
+    **Note: basepath root varies by HSDP region.**
+
+
+    Service: Authorize - Identity & Access Management (IAM)
+
+
+    Schemes: https
+  contact:
+    name: HSDP Support Operations
+    url: 'https://www.hsdp.io/support'
+  termsOfService: 'https://www.hsdp.io/legal'
+basePath: /authorize/identity
+schemes:
+  - https
+paths:
+  /authorize/identity/Proposition:
+    post:
+      summary: Creates a new Proposition.
+      description: >-
+        Create a new proposition. A user with PROPOSITION.WRITE permissions
+        assigned to the organization role can create the proposition under the
+        organization.
+      tags:
+        - Proposition
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          description: >-
+            Authorization header that protects the resource from unauthorized
+            access. An OAuth2 access token need to be passed as per RFC6750.
+          in: header
+          type: string
+          required: true
+        - name: api-version
+          in: header
+          type: integer
+          description: |
+            API Version. Supported Version `1`
+          required: true
+          minimum: 1
+          maximum: 1
+          default: 1
+        - name: body
+          description: The Proposition to add.
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PropositionCreate'
+      responses:
+        '201':
+          description: Resource created.
+          headers:
+            ETag:
+              type: string
+              description: The version ID of the newly created Proposition resource.
+            Last-Modified:
+              description: >-
+                Date and time of the creation of the newly created Proposition
+                resource.
+              type: string
+              format: date-time
+            Location:
+              description: >-
+                Full (versioned) URI to the newly created Proposition. Ex -
+                "/authorize/identity/Proposition/f17100e9-bb9f-4a51-a81f-a854088c07a2"
+              type: string
+        '400':
+          description: '**Bad request.** The resource could not be parsed.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "invalid",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10504"
+                            }
+                          "text": "Invalid request"
+                        },
+                        "diagnostics": "Validate the message against the API schema"
+                        "location": [
+                          "<<field1>>", "<<field2>>"
+                        ]
+                      }
+                    ]
+              }
+        '401':
+          description: '**Unauthorized.** Authorization header is not passed in the header.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "security",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10106"
+                            }
+                          "text": "Mandatory header 'Authorization' missing or invalid"
+                        },
+                        "diagnostics": "Invalid Authorization header"
+                      }
+                    ]
+              }
+        '403':
+          description: >-
+            **Forbidden.** The provided credentials do not allow for the
+            creation of new Proposition resources.
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: >-
+              ## ---------------Message for Invalid user
+              authentication-------------------
+
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "forbidden",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10302"
+                            }
+                          "text": "Unauthorized access to the resources "
+                        },
+                        "diagnostics": "Validate the access authorization to the resource"
+                        "location": [
+                          "header.Authorization"
+                        ]
+                      }
+                    ]
+              }
+
+              ## -------------Message for invalid protocol----------------
+
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "forbidden",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10306"
+                            }
+                          "text": "Support only HTTPS protocol"
+                        },
+                        "diagnostics": "Check if the message are sent in HTTPS protocol"
+                      }
+                    ]
+              }
+        '406':
+          description: '**Not Acceptable.** Invalid Accept Header.'
+        '409':
+          description: >-
+            **Conflict.** Proposition already exists. The Proposition name
+            already exists.
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "duplicate",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "31301"
+                            }
+                          "text": "Duplicate Proposition name"
+                        },
+                        "diagnostics": "Proposition already exists"
+                        "location": [
+                          "Proposition.name"
+                        ]
+                      }
+                    ]
+              }
+        '415':
+          description: '**Unsupported Media Type.** Invalid content type.'
+        '422':
+          description: >-
+            **Unprocessable Entity.** The proposed resource violated applicable
+            server business rules.
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "value",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "31303"
+                            }
+                          "text": "Processing failure."
+                        },
+                        "diagnostics": "Enter valid parameters. Refer to API specification",
+                        "location": [
+                          "<<field1>>", "<<field2>>"
+                        ]
+                      }
+                    ]
+              }
+        '500':
+          description: '**Internal Server Error.**'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "exception",
+                        "details": {
+                          "coding": [
+                            {
+                              "system": "extension",
+                              "code": "10701"
+                            }
+                          ],
+                          "text": "Internal server error"
+                        },
+                        "diagnostics": "Retry after sometime."
+                      }
+                    ]
+              }
+        '504':
+          description: '**Gateway Timeout.** Connectivity to upstream system has timed out.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "exception",
+                        "details": {
+                          "coding": [
+                            {
+                              "system": "extension",
+                              "code": "10702"
+                            }
+                          ],
+                          "text": "Cannot connect to upstream system"
+                        },
+                        "diagnostics": "Retry after sometime. Possible server connectivity problems."
+                      }
+                    ]
+              }
+    get:
+      summary: Retrieves Proposition(s) based on a set of parameters.
+      description: >-
+        Retrieves Proposition(s) based on a set of parameters in order to either
+        check certain values, or to change (some) values of this resource and
+        PUT the resource back to the API. A user with PROPOSITION.READ
+        permissions assigned to the organization role can retrieve propositions
+        under the organization. The organization ID or ID is mandatory for
+        retrieval.
+      tags:
+        - Proposition
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          description: >-
+            Authorization header that protects the resource from unauthorized
+            access. An OAuth2 access token need to be passed as per RFC6750.
+          in: header
+          type: string
+          required: true
+        - name: api-version
+          in: header
+          type: integer
+          required: true
+          minimum: 1
+          maximum: 1
+          default: 1
+        - name: _id
+          description: >-
+            The ID of the resource. When using this, the query is identical to
+            do a get on path `Proposition/{id}`.
+          in: query
+          required: false
+          type: string
+        - name: _count
+          description: The maximum amount of resources to return (in a single page).
+          in: query
+          required: false
+          type: integer
+        - name: _page
+          description: >-
+            Page set to be returned based on the number of records fetched for
+            the query. The page set  beyond the number of pages will return the
+            last page.
+          in: query
+          required: false
+          type: integer
+        - name: name
+          description: The name of the proposition.
+          in: query
+          type: string
+          required: false
+        - name: organizationId
+          description: The (logical) ID of the organization this proposition belongs to.
+          in: query
+          type: string
+          required: false
+        - name: globalReferenceId
+          description: >-
+            The global reference ID for the provisioned resource. Used across
+            deployment instances.
+          in: query
+          type: string
+          required: false
+      responses:
+        '200':
+          description: '**Success.**'
+          schema:
+            $ref: '#/definitions/Propositions'
+          examples:
+            application/json: |-
+              {
+                "total": 2,
+                "entry":[
+                  {
+                      "id": "f17100e9-bb9f-4a51-a81f-a854088c07a2",
+                      "meta": {
+                        "versionId": "4",
+                        "lastModified": "2015-07-29T15:42:03.123Z"
+                      },
+                      "name": "Ugrow",
+                      "description": "Ugrow proposition",
+                      "organizationId": "c4f3f356-332d-4ea4-8eb0-730b025701cf"
+                      "globalReferenceId":"g4f3f356-332d-4ef6-8eb0-730b0257899cd"
+
+                  },
+                  {
+                      "id": "a18100e9-bc5f-4b61-a81f-a854088c08a2",
+                      "meta": {
+                        "versionId": "2",
+                        "lastModified": "2016-07-14T10:42:03.123Z"
+                      },
+                      "name": "PHS",
+                      "description": "PHS Proposition",
+                      "organizationId": "c4f3f356-332d-4ea4-8eb0-730b025701cf"
+                      "globalReferenceId":"g4f3f356-332d-4ef6-8eb0-730b0257899cd"
+                  }
+                ]
+              }
+        '400':
+          description: '**Bad request.** Query parameters are invalid.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "invalid",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10502"
+                            }
+                          "text": "Invalid Input Parameters"
+                        },
+                        "diagnostics": "Please provide defined query parameters."
+                        "location": [
+                          "<<field1>>", "<<field2>>"
+                        ]
+                      }
+                    ]
+              }
+        '401':
+          description: '**Unauthorized.** Authorization header is not passed in the header.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "security",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10106"
+                            }
+
+                          "text": "Invalid Authorization header"
+                        },
+                        "diagnostics": "Invalid Authorization header",
+                      }
+                    ]
+              }
+        '403':
+          description: >-
+            **Forbidden.** The provided credentials do not allow for the
+            creation of new Proposition resources.
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: >-
+              ## ---------------Message for Invalid user
+              authentication-------------------
+
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "forbidden",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10302"
+                            }
+
+                          "text": "Unauthorized access to the resources "
+                        },
+                        "diagnostics": "Validate the access authorization to the resource",
+                        "location": [
+                          "header.Authorization"
+                        ]
+                      }
+                    ]
+              }
+
+              ## -------------Message for invalid protocol----------------
+
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "forbidden",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10306"
+                            }
+
+                          "text": "Support only HTTPS protocol"
+                        },
+                        "diagnostics": "Check if the message are sent in HTTPS protocol"
+                      }
+                    ]
+              }
+        '406':
+          description: >-
+            **Not Acceptable.** Invalid accept header. Accepts only
+            application/json.
+        '415':
+          description: '**Unsupported Media Type.** Invalid content type.'
+        '500':
+          description: '**Internal server error.**'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "exception",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10701"
+                            }
+                          
+                          "text": "Internal server error"
+                        },
+                        "diagnostics": "Retry after sometime."
+                      }
+                    ]
+              }
+        '504':
+          description: '**Gateway Timeout.** Connectivity to upstream system has timed out.'
+          schema:
+            $ref: '#/definitions/OperationOutcome'
+          examples:
+            application/json: |-
+              {
+                 "resourceType": "OperationOutcome"
+                 "issue": [
+                      {
+                        "severity": "error",
+                        "code": "exception",
+                        "details": {
+                          "coding":
+                            {
+                              "system": "extension",
+                              "code": "10702"
+                            }
+
+                          "text": "Cannot connect to upstream system"
+                        },
+                        "diagnostics": "Retry after sometime.Possible server connectivity problems."
+                      }
+                    ]
+              }
+definitions:
+  Proposition:
+    title: Proposition
+    description: >-
+      A identity representing an proposition. Proposition belongs to an
+      organization.
+    type: object
+    required:
+      - id
+      - name
+      - organizationId
+      - globalReferenceId
+    properties:
+      id:
+        description: The identifier for propositio.
+        type: string
+        format: uuid
+      name:
+        description: >-
+          The name of the proposition. Invalid Characters:-
+          "[$&+,@'\":;=?#|()\\[\\]<>]".
+        type: string
+        minLength: 1
+        maxLength: 20
+        x-invalid-chars: '[$&+,@''":;=?#|()\[\]<>]'
+      description:
+        description: >-
+          Text for description of proposition. Invalid Characters:-
+          "[&+'\";=?#|()\\[\\]<>]"
+        type: string
+        minLength: 0
+        maxLength: 250
+        x-invalid-chars: '[&+''";=?#|()\[\]<>]'
+      organizationId:
+        description: Organization to which this proposition associated.
+        type: string
+        format: uuid
+      globalReferenceId:
+        description: >-
+          Reference identifier defined by the provisioning user. This reference
+          identifier would be carried over to identify the provisioned resource
+          across deployment instances (dev, staging, production). Invalid
+          Characters:- "[&+'\";=?()\\[\\]<>]"
+        type: string
+        minLength: 3
+        maxLength: 50
+        x-invalid-chars: '[&+''";=?()\[\]<>]'
+      meta:
+        $ref: '#/definitions/Meta'
+    example:
+      resourceType: Proposition
+      id: f17100e9-bb9f-4a51-a81f-a854088c07a2
+      meta:
+        versionId: 2
+        lastModified: '2015-07-29T15:42:03.123Z'
+      name: Ugrow
+      description: Ugrow proposition
+      organizationId: c4f3f356-332d-4ea4-8eb0-730b025701cf
+      globalReferenceId: g4f3f356-332d-4ef6-8eb0-730b0257899cd
+  PropositionCreate:
+    title: Proposition
+    description: >-
+      A identity representing an proposition. Proposition belongs to an
+      organization.
+    type: object
+    required:
+      - name
+      - organizationId
+      - globalReferenceId
+    properties:
+      name:
+        description: >-
+          Name of the proposition. Invalid Characters:-
+          "[$&+,@'\":;=?#|()\\[\\]<>]".
+        type: string
+        minLength: 1
+        maxLength: 20
+        x-invalid-chars: '[$&+,@''":;=?#|()\[\]<>]'
+      description:
+        description: >-
+          Text for description of proposition. Invalid Characters:-
+          "[&+'\";=?#|()\\[\\]<>]"
+        type: string
+        minLength: 0
+        maxLength: 250
+        x-invalid-chars: '[&+''";=?#|()\[\]<>]'
+      organizationId:
+        description: Organization to which this proposition associated to.
+        type: string
+        format: uuid
+      globalReferenceId:
+        description: >-
+          Reference identifier defined by the provisioning user. This reference
+          identifier would be carried over to identify the provisioned resource
+          across deployment instances (dev, staging, production). Invalid
+          Characters:- "[&+'\";=?()\\[\\]<>]"
+        type: string
+        minLength: 3
+        maxLength: 50
+        x-invalid-chars: '[&+''";=?()\[\]<>]'
+    example:
+      name: Ugrow
+      description: Ugrow proposition
+      organizationId: c4f3f356-332d-4ea4-8eb0-730b025701cf
+      globalReferenceId: g4f3f356-332d-4ef6-8eb0-730b0257899cd
+  OperationOutcome:
+    properties:
+      resourceType:
+        type: string
+        description: OperationOutcome in case of failure scenarios.
+      issue:
+        type: array
+        items:
+          $ref: '#/definitions/Issue'
+    required:
+      - issue
+  Issue:
+    properties:
+      severity:
+        type: string
+        description: Outcome issue level. One of the following enum elements
+        enum:
+          - fatal
+          - error
+          - warning
+          - information
+      code:
+        type: string
+        description: Issue or Error code as defined in FHIR standards.
+      details:
+        $ref: '#/definitions/Details'
+      diagnostics:
+        type: string
+        description: >-
+          Additional diagnostic information about the issue.
+            **NOTE** - Donot use diagnostic message for error handling purposes as the message is subject to change.
+      location:
+        type: array
+        description: Fields which are the cause of the error.
+        items:
+          type: string
+    required:
+      - severity
+      - code
+      - details
+  Details:
+    description: >-
+        Additional details about the error occurred.
+        **NOTE** - __This additional information is provided for troubleshooting purpose and NOT meant for error handling by clients. All values returned by details object are subject to change__
+    properties:
+      coding:
+        $ref: '#/definitions/Coding'
+      text:
+        type: string
+        description: Detailed message of the error.
+  Meta:
+    title: Meta
+    description: Resource metadata as security tags and version info.
+    type: object
+    properties:
+      versionId:
+        description: The version of this resource.
+        type: string
+      lastUpdated:
+        description: The date and time this version of the resource was created/updated.
+        type: string
+        format: datetime
+  Coding:
+    title: Coding
+    description: Representation of a known value in some coding system.
+    type: object
+    properties:
+      system:
+        description: >-
+          URL identifying the name system of the value. Invalid Characters:-
+          "[&+@'\";=?#|()\\[\\]<>]"
+        type: string
+        minLength: 0
+        maxLength: 250
+        x-invalid-chars: '[&+@''";=?#|()\[\]<>]'
+      version:
+        description: Version of the coding system.
+        type: string
+      code:
+        description: >-
+          Value of the the code within the coding system. Invalid Characters:-
+          "[&+@'\";=?#|()\\[\\]<>]"
+        type: string
+        minLength: 1
+        maxLength: 20
+        x-invalid-chars: '[&+@''";=?#|()\[\]<>]'
+      display:
+        description: >-
+          Textual, human readable representation of the code for use in UIs.
+          Invalid Characters:- "[&+@'\";=?#|()\\[\\]<>]"
+        type: string
+        minLength: 1
+        maxLength: 50
+        x-invalid-chars: '[&+@''";=?#|()\[\]<>]'
+      userSelected:
+        description: If this coding was chosen directly by the user.
+        type: boolean
+  Propositions:
+    title: Propositions
+    description: JSON representation of a Proposition feed.
+    type: object
+    properties:
+      total:
+        type: integer
+      entry:
+        type: array
+        items:
+          $ref: '#/definitions/Proposition'
